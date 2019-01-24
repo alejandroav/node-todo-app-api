@@ -10,7 +10,6 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var app = express();
-
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
@@ -19,8 +18,8 @@ app.post('/todos', (req, res) => {
 		completed: req.body.completed,
 		completedAt: null
 	}).save()
-		.then((doc) => {
-			res.send(doc);
+		.then((todo) => {
+			res.send(todo);
 		}, (err) => {
 			res.status(400).send();
 		});
@@ -92,6 +91,21 @@ app.patch('/todos/:id', (req, res) => {
 		})
 		.catch((err) => {
 			res.status(400).send();
+		});
+});
+
+app.post('/users', (req, res) => {
+	var body = _.pick(req.body, ['email', 'password']);
+	var user = User(body);
+	user.save()
+		.then(() => {
+			return user.generateAuthToken();
+		})
+		.then((token) => {			
+			res.header('x-auth', token).send(user);
+		})
+		.catch((err) => {
+			res.status(400).send(err);
 		});
 });
 
